@@ -1,4 +1,5 @@
 import CloseIcon from "@mui/icons-material/Close";
+import classNames from "classnames";
 import React from "react";
 import { Form, Modal } from "react-bootstrap";
 import { useDispatch, useSelector } from "react-redux";
@@ -35,8 +36,7 @@ const SettingModal = () => {
     dispatch(setShowSettingModal(false));
   };
 
-  const onChangeLetterCount = (e: React.ChangeEvent) => {
-    const v = parseInt((e.target as HTMLSelectElement).value, 10);
+  const onSelectLetterCount = (v: number) => {
     setLetterCountLS(v);
     dispatch(setLetterCount(v));
   };
@@ -85,8 +85,8 @@ const SettingModal = () => {
         </button>
       </Modal.Header>
       <Modal.Body>
-        <section className="pt-0">
-          <div>
+        <section className="letter-count-section pt-0">
+          <div className="w-100">
             <div>
               <b>글자 수</b>
             </div>
@@ -95,20 +95,21 @@ const SettingModal = () => {
                 한 단어의 자모(글자) 개수입니다. 바꾸면 새 게임이 시작됩니다.
               </small>
             </p>
-          </div>
-          <Form>
-            <Form.Select
-              className="letter-count-select"
-              value={letterCount}
-              onChange={onChangeLetterCount}
-            >
+            <div className="letter-count-buttons">
               {availableLengths.map(len => (
-                <option key={len} value={len}>
+                <button
+                  key={len}
+                  type="button"
+                  className={classNames("letter-count-btn", {
+                    active: len === letterCount
+                  })}
+                  onClick={() => onSelectLetterCount(len)}
+                >
                   {len}
-                </option>
+                </button>
               ))}
-            </Form.Select>
-          </Form>
+            </div>
+          </div>
         </section>
         <section>
           <div>
