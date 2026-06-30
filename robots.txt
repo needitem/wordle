@@ -1,0 +1,3 @@
+https://jhlov.github.io/wordle/sitemap.xml
+User-agent: *
+Disallow:
