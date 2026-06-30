@@ -5,17 +5,22 @@ import Hangul from "hangul-js";
 import { GameHeader } from "pages/game/GameHeader";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Button, Form } from "react-bootstrap";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { useHistory } from "react-router-dom";
+import { RootState } from "store";
 import { addToast } from "store/common";
 import { setGameType } from "store/game";
-import { MAX_LETTER_COUNT, MIN_LETTER_COUNT } from "utils/const";
 import { Utils } from "utils/Utils";
 import "./Maker.scss";
 
 export const Maker = () => {
   const dispatch = useDispatch();
   const history = useHistory();
+
+  // 설정된 글자 수에 맞춰 문제를 만든다.
+  const letterCount = useSelector(
+    (state: RootState) => state.common.letterCount
+  );
 
   const [word, setWord] = useState<string>("a");
   const [key, setKey] = useState<string>("");
@@ -67,10 +72,7 @@ export const Maker = () => {
     }
 
     const letters = Hangul.disassemble(word);
-    if (
-      letters.length < MIN_LETTER_COUNT ||
-      letters.length > MAX_LETTER_COUNT
-    ) {
+    if (letters.length !== letterCount) {
       return false;
     }
 
@@ -79,7 +81,7 @@ export const Maker = () => {
     }
 
     return true;
-  }, [word]);
+  }, [word, letterCount]);
 
   const createWordle = () => {
     if (isValid) {
@@ -87,7 +89,7 @@ export const Maker = () => {
     } else {
       dispatch(
         addToast({
-          text: `${MIN_LETTER_COUNT}~${MAX_LETTER_COUNT}자(자모) 단어를 입력하세요.`
+          text: `${letterCount}자(자모) 단어를 입력하세요.`
         })
       );
 
@@ -99,18 +101,14 @@ export const Maker = () => {
     }
   };
 
+  // 설정된 글자 수만큼 타일을 보여준다. (입력한 자모 + 빈칸)
   const letters: string[] = useMemo<string[]>(() => {
-    const letters = Hangul.disassemble(word);
-    if (letters.length < MIN_LETTER_COUNT) {
-      Array(MIN_LETTER_COUNT - letters.length)
-        .fill(0)
-        .forEach(_ => {
-          letters.push("");
-        });
-    }
-
-    return letters;
-  }, [word]);
+    const disassembled = Hangul.disassemble(word);
+    const slots = Math.max(letterCount, disassembled.length);
+    return Array(slots)
+      .fill("")
+      .map((_, i) => disassembled[i] ?? "");
+  }, [word, letterCount]);
 
   const wordleUrl = useMemo(() => {
     return `${window.location.origin}${window.location.pathname}#/c/${key}`;
@@ -154,14 +152,18 @@ export const Maker = () => {
           직접 워들 문제를 만들어 친구들과 공유하고 즐겨보세요!
         </p>
 
-        <div ref={tilesRef} className="tiles mb-4">
+        <div
+          ref={tilesRef}
+          className="tiles mb-4"
+          style={{ "--letter-count": letterCount } as React.CSSProperties}
+        >
           {letters.map((letter, i) => (
             <div
               key={`add-solution-tile-${i}`}
               className={classNames("tile", {
                 invalid:
                   (letter && !validLetterList.includes(letter)) ||
-                  i >= MAX_LETTER_COUNT
+                  i >= letterCount
               })}
             >
               {letter}
@@ -173,12 +175,15 @@ export const Maker = () => {
           type="text"
           value={word}
           onChange={e => setWord(e.target.value)}
-          maxLength={MAX_LETTER_COUNT}
+          maxLength={letterCount}
           placeholder="단어를 입력하세요."
           onKeyDown={onKeyDown}
         />
         <p className="text-left">
-          <small>* shift 가 필요한 글자는 제외됩니다.</small>
+          <small>
+            * 현재 설정된 글자 수: <b>{letterCount}자</b> (설정에서 변경 가능)
+            <br />* shift 가 필요한 글자는 제외됩니다.
+          </small>
         </p>
 
         <Button variant="primary" disabled={!isValid} onClick={createWordle}>
