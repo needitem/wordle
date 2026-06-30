@@ -1,5 +1,6 @@
 import _ from "lodash";
 import { GameType } from "store/game";
+import { DEFAULT_LETTER_COUNT } from "utils/const";
 
 export interface GameData {
   guessList: string[];
@@ -9,6 +10,7 @@ export interface GameData {
   id: number;
   state: "PLAYING" | "FINISH";
   solution?: string;
+  letterCount: number;
 }
 
 export const initGameData: GameData = {
@@ -17,7 +19,8 @@ export const initGameData: GameData = {
   keyMap: {},
   curRow: -1,
   id: 0,
-  state: "PLAYING"
+  state: "PLAYING",
+  letterCount: DEFAULT_LETTER_COUNT
 };
 
 export const getGameDataFromLS = (gameType: GameType): GameData => {

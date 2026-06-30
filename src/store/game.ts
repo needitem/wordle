@@ -1,7 +1,7 @@
 import { createSlice } from "@reduxjs/toolkit";
 import _ from "lodash";
 import { ResultSummaryRes } from "pages/game/Game";
-import { ROW_COUNT } from "utils/const";
+import { DEFAULT_LETTER_COUNT, ROW_COUNT } from "utils/const";
 import { GameData } from "utils/GameData";
 
 export type GameType =
@@ -16,6 +16,7 @@ interface InitialState {
   gameType: GameType;
   id: number;
   solution: string;
+  letterCount: number;
   curRow: number;
   guessList: string[];
   evaluationList: string[];
@@ -29,6 +30,7 @@ const initialState: InitialState = {
   gameType: "NONE",
   id: -1,
   solution: "",
+  letterCount: DEFAULT_LETTER_COUNT,
   curRow: -1,
   guessList: ["", "", "", "", "", ""],
   evaluationList: ["", "", "", "", "", ""],
@@ -61,6 +63,9 @@ export const game = createSlice({
     setSolution: (state, action: { payload: string }) => {
       state.solution = action.payload;
     },
+    setGameLetterCount: (state, action: { payload: number }) => {
+      state.letterCount = action.payload;
+    },
     setCurRow: (state, action: { payload: number }) => {
       state.curRow = Math.min(ROW_COUNT - 1, action.payload);
     },
@@ -82,6 +87,9 @@ export const game = createSlice({
       if (action.payload.solution) {
         state.solution = action.payload.solution;
       }
+      if (action.payload.letterCount) {
+        state.letterCount = action.payload.letterCount;
+      }
     },
     setCurResultSummary: (state, action: { payload: ResultSummaryRes }) => {
       state.curReslutSummary = { ...action.payload };
@@ -100,6 +108,7 @@ export const {
   setGameType,
   setId,
   setSolution,
+  setGameLetterCount,
   setCurRow,
   setGuessList,
   setEvaluationList,

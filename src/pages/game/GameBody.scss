@@ -15,19 +15,19 @@
     }
 
     .tile {
-      width: 60px;
-      height: 60px;
+      // 글자 수에 따라 타일 크기를 줄여 화면을 넘지 않게 한다. (최대 60px)
+      --tile-size: min(
+        60px,
+        calc((min(100vw, 500px) - 24px) / var(--letter-count, 5) - 6px)
+      );
+      width: var(--tile-size);
+      height: var(--tile-size);
       margin: 3px;
       font-weight: 900;
-      font-size: 32px;
+      font-size: calc(var(--tile-size) * 0.53);
       display: flex;
       justify-content: center;
       align-items: center;
-
-      @media (max-width: 320px) {
-        width: 46px;
-        height: 46px;
-      }
 
       &.letter {
         animation: ani 0.2s;

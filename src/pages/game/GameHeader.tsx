@@ -142,20 +142,6 @@ const GameHeader = () => {
                 무한 워들
               </a>
             )}
-            {gameType === "BATTLE" ? (
-              <span className="px-2 border-right">워들 vs AI</span>
-            ) : (
-              <a
-                className="px-2 border-right"
-                onClick={() => {
-                  setActiveMenuKey("");
-                  dispatch(syncFromGameData(initGameData));
-                  history.replace("/battle");
-                }}
-              >
-                워들 vs AI
-              </a>
-            )}
             {gameType === "MAKER" ? (
               <span className="px-2">워들 메이커</span>
             ) : (

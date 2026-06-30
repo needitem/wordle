@@ -1,6 +1,5 @@
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import PlayArrowIcon from "@mui/icons-material/PlayArrow";
-import axios from "axios";
 import classNames from "classnames";
 import Hangul from "hangul-js";
 import { GameHeader } from "pages/game/GameHeader";
@@ -8,15 +7,11 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Button, Form } from "react-bootstrap";
 import { useDispatch } from "react-redux";
 import { useHistory } from "react-router-dom";
-import { addToast, setLoading } from "store/common";
+import { addToast } from "store/common";
 import { setGameType } from "store/game";
-import { LETTER_COUNT } from "utils/const";
+import { MAX_LETTER_COUNT, MIN_LETTER_COUNT } from "utils/const";
+import { Utils } from "utils/Utils";
 import "./Maker.scss";
-
-interface Response {
-  error?: string;
-  key?: string;
-}
 
 export const Maker = () => {
   const dispatch = useDispatch();
@@ -63,7 +58,7 @@ export const Maker = () => {
   }, []);
 
   const isValid = useMemo(() => {
-    if (word.length !== 2) {
+    if (word.length === 0) {
       return false;
     }
 
@@ -72,7 +67,10 @@ export const Maker = () => {
     }
 
     const letters = Hangul.disassemble(word);
-    if (letters.length !== LETTER_COUNT) {
+    if (
+      letters.length < MIN_LETTER_COUNT ||
+      letters.length > MAX_LETTER_COUNT
+    ) {
       return false;
     }
 
@@ -83,43 +81,28 @@ export const Maker = () => {
     return true;
   }, [word]);
 
-  const createWordle = async () => {
+  const createWordle = () => {
     if (isValid) {
-      dispatch(setLoading(true));
-      setKey("");
+      setKey(Utils.encodeSolution(word));
+    } else {
+      dispatch(
+        addToast({
+          text: `${MIN_LETTER_COUNT}~${MAX_LETTER_COUNT}자(자모) 단어를 입력하세요.`
+        })
+      );
 
-      try {
-        const r = await axios.post<Response>(
-          "https://fszsuthkzi.execute-api.ap-northeast-2.amazonaws.com/default/wordle-create-custom",
-          { word }
-        );
-
-        if (r.data.error) {
-          dispatch(addToast({ text: r.data.error }));
-
-          // 흔들기
-          tilesRef.current?.classList.add("shake");
-          setTimeout(() => {
-            tilesRef.current?.classList.remove("shake");
-          }, 200);
-          return;
-        }
-
-        if (r.status === 200) {
-          setKey(r.data.key!);
-        }
-      } catch (error) {
-        dispatch(setLoading(false));
-      } finally {
-        dispatch(setLoading(false));
-      }
+      // 흔들기
+      tilesRef.current?.classList.add("shake");
+      setTimeout(() => {
+        tilesRef.current?.classList.remove("shake");
+      }, 200);
     }
   };
 
   const letters: string[] = useMemo<string[]>(() => {
     const letters = Hangul.disassemble(word);
-    if (letters.length < 5) {
-      Array(5 - letters.length)
+    if (letters.length < MIN_LETTER_COUNT) {
+      Array(MIN_LETTER_COUNT - letters.length)
         .fill(0)
         .forEach(_ => {
           letters.push("");
@@ -176,7 +159,9 @@ export const Maker = () => {
             <div
               key={`add-solution-tile-${i}`}
               className={classNames("tile", {
-                invalid: (letter && !validLetterList.includes(letter)) || 4 < i
+                invalid:
+                  (letter && !validLetterList.includes(letter)) ||
+                  i >= MAX_LETTER_COUNT
               })}
             >
               {letter}
@@ -188,7 +173,7 @@ export const Maker = () => {
           type="text"
           value={word}
           onChange={e => setWord(e.target.value)}
-          maxLength={2}
+          maxLength={MAX_LETTER_COUNT}
           placeholder="단어를 입력하세요."
           onKeyDown={onKeyDown}
         />

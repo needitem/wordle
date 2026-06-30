@@ -14,6 +14,7 @@ import { syncFromGameData } from "store/game";
 import { setShowStatisticsModal } from "store/modal";
 import { ROW_COUNT } from "utils/const";
 import { getGameDataFromLS, initGameData } from "utils/GameData";
+import { Utils } from "utils/Utils";
 import {
   getStatisticsData,
   initStatisticsData,
@@ -65,7 +66,9 @@ const StatisticsModal = (props: Props) => {
       setStatisticsData(statisticsData);
 
       const gameData = getGameDataFromLS(gameType);
-      setLastWinRow(gameData.evaluationList.indexOf("sssss"));
+      setLastWinRow(
+        gameData.evaluationList.findIndex(e => Utils.isAllStrike(e))
+      );
       setIsFinish(gameData.state === "FINISH");
       if (gameType === "NORMAL" && gameData.state === "FINISH") {
         const intervalId_ = setInterval(() => {

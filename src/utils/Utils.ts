@@ -2,10 +2,14 @@ import Hangul from "hangul-js";
 import _ from "lodash";
 import moment from "moment";
 import { GameType } from "store/game";
-import { LETTER_COUNT, ROW_COUNT } from "utils/const";
+import { ROW_COUNT } from "utils/const";
 import { GameData } from "utils/GameData";
 
 export const Utils = {
+  /** 평가 문자열이 전부 스트라이크(=정답)인지 확인 */
+  isAllStrike: (evaluation: string): boolean => {
+    return evaluation.length > 0 && evaluation.split("").every(c => c === "s");
+  },
   /**
    *
    * @param guess 'ㅊㅜㅊㅡㄱ'
@@ -13,24 +17,25 @@ export const Utils = {
    * @returns
    */
   getEvaluation: (guess: string, solution: string) => {
-    let evaluation = ["o", "o", "o", "o", "o"];
+    const letterCount = guess.length;
+    let evaluation = Array(letterCount).fill("o");
     const solution_ = Hangul.disassemble(solution);
 
     // 스트라이크 체크
-    for (let i = 0; i < LETTER_COUNT; ++i) {
+    for (let i = 0; i < letterCount; ++i) {
       if (guess[i] === solution_[i]) {
         evaluation[i] = "s";
       }
     }
 
     // 볼 체크
-    for (let i = 0; i < LETTER_COUNT; ++i) {
+    for (let i = 0; i < letterCount; ++i) {
       if (evaluation[i] === "o") {
         let countLetterInSolution = solution_.filter(
           l => l === guess[i]
         ).length;
         let countSB = 0;
-        for (let j = 0; j < LETTER_COUNT; ++j) {
+        for (let j = 0; j < letterCount; ++j) {
           if (guess[i] === guess[j] && evaluation[j] !== "o") {
             ++countSB;
           }
@@ -49,9 +54,11 @@ export const Utils = {
     guessList: string[],
     evaluationList: string[]
   ): string => {
+    const letterCount = guessList[curRow].length;
+
     // 스트라이크 체크
     for (let i = 0; i < curRow; ++i) {
-      for (let j = 0; j < LETTER_COUNT; ++j) {
+      for (let j = 0; j < letterCount; ++j) {
         if (evaluationList[i].split("")[j] === "s") {
           if (guessList[curRow].split("")[j] !== guessList[i].split("")[j]) {
             return `${j + 1}번째 글자는 '${
@@ -64,7 +71,7 @@ export const Utils = {
 
     // 볼 체크
     for (let i = 0; i < curRow; ++i) {
-      for (let j = 0; j < LETTER_COUNT; ++j) {
+      for (let j = 0; j < letterCount; ++j) {
         if (evaluationList[i].split("")[j] === "b") {
           if (!guessList[curRow].includes(guessList[i].split("")[j])) {
             return `'${guessList[i].split("")[j]}' 글자가 포함되어야 합니다.`;
@@ -96,31 +103,20 @@ export const Utils = {
 
     const site =
       gameType === "NORMAL"
-        ? "https://jhlov.github.io/wordle\n\n"
+        ? "https://needitem.github.io/wordle\n\n"
         : gameType === "INFINITE"
-        ? "https://jhlov.github.io/wordle/#/infinite\n\n"
+        ? "https://needitem.github.io/wordle/#/infinite\n\n"
         : gameType === "CUSTOM"
-        ? `https://jhlov.github.io/wordle/#/c/${key}\n\n`
-        : "https://jhlov.github.io/wordle/#/battle\n\n";
+        ? `https://needitem.github.io/wordle/#/c/${key}\n\n`
+        : "https://needitem.github.io/wordle/#/battle\n\n";
 
-    let state = "";
-    if (gameType === "BATTLE") {
-      state = !gameData.evaluationList.some(
-        evaluation => evaluation === "sssss"
-      )
-        ? "무"
-        : gameData.curRow % 2 === 0
-        ? "패"
-        : "승";
-    } else {
-      state = `${
-        gameData.evaluationList.some(evaluation => evaluation === "sssss")
-          ? gameData.evaluationList
-              .filter(evaluation => evaluation)
-              .length.toString()
-          : "X"
-      }/${ROW_COUNT}`;
-    }
+    const state = `${
+      gameData.evaluationList.some(evaluation => Utils.isAllStrike(evaluation))
+        ? gameData.evaluationList
+            .filter(evaluation => evaluation)
+            .length.toString()
+        : "X"
+    }/${ROW_COUNT}`;
 
     const flag = moment().month() === 2 && moment().date() === 1 ? "🇰🇷 " : "";
     let copyText = `${flag}${title} ${id}${state}${isHardmode ? "*" : ""}\n`;
@@ -173,5 +169,19 @@ export const Utils = {
     });
 
     return newkeyMap;
+  },
+  /** 커스텀 게임 URL 용으로 정답 단어를 URL-safe base64 로 인코딩 */
+  encodeSolution: (word: string): string => {
+    const b64 = btoa(unescape(encodeURIComponent(word)));
+    return b64.replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+  },
+  /** 커스텀 게임 URL 의 key 를 정답 단어로 디코딩 */
+  decodeSolution: (key: string): string => {
+    try {
+      const b64 = key.replace(/-/g, "+").replace(/_/g, "/");
+      return decodeURIComponent(escape(atob(b64)));
+    } catch {
+      return "";
+    }
   }
 };

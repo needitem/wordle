@@ -6,7 +6,13 @@ import { Maker } from "pages/maker/Maker";
 import React, { useEffect } from "react";
 import { useDispatch } from "react-redux";
 import { HashRouter, Route } from "react-router-dom";
-import { setContrastmode, setDarkmode, setHardmode } from "store/common";
+import {
+  setContrastmode,
+  setDarkmode,
+  setHardmode,
+  setLetterCount
+} from "store/common";
+import { getLetterCountLS } from "utils/const";
 import "styles/tile.scss";
 import "./App.scss";
 
@@ -32,6 +38,8 @@ function App() {
     if (contrastmode) {
       document.body.classList.add("contrast");
     }
+
+    dispatch(setLetterCount(getLetterCountLS()));
   }, []);
 
   return (
@@ -40,7 +48,6 @@ function App() {
         <HashRouter>
           <Route path="/" component={Game} exact />
           <Route path="/infinite" component={Game} />
-          <Route path="/battle" component={Game} />
           <Route path="/maker" component={Maker} />
           <Route path="/c/:key" component={Game} />
         </HashRouter>

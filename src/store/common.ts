@@ -1,11 +1,13 @@
 import { createSlice } from "@reduxjs/toolkit";
 import { ToastData } from "components/ToastLayer";
+import { getLetterCountLS } from "utils/const";
 
 interface InitialState {
   isHardmode: boolean;
   isDarkmode: boolean;
   isContrastMode: boolean;
   isLoading: boolean;
+  letterCount: number;
   toastList: ToastData[];
   toastList2: ToastData[];
 }
@@ -15,6 +17,7 @@ const initialState: InitialState = {
   isDarkmode: false,
   isContrastMode: false,
   isLoading: false,
+  letterCount: getLetterCountLS(),
   toastList: [],
   toastList2: []
 };
@@ -34,6 +37,9 @@ export const common = createSlice({
     },
     setLoading: (state, action: { payload: boolean }) => {
       state.isLoading = action.payload;
+    },
+    setLetterCount: (state, action: { payload: number }) => {
+      state.letterCount = action.payload;
     },
     addToast: (state, action: { payload: ToastData }) => {
       state.toastList = [...state.toastList, action.payload];
@@ -60,6 +66,7 @@ export const {
   setDarkmode,
   setContrastmode,
   setLoading,
+  setLetterCount,
   addToast,
   closeToast,
   addToast2,

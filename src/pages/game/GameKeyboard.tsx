@@ -3,7 +3,6 @@ import classNames from "classnames";
 import React, { useMemo } from "react";
 import { useSelector } from "react-redux";
 import { RootState } from "store";
-import { LETTER_COUNT } from "utils/const";
 import "./GameKeyboard.scss";
 
 interface Props {
@@ -14,6 +13,7 @@ interface Props {
 
 const GameKeyboard = (props: Props) => {
   const isAITurn = useSelector((state: RootState) => state.game.isAITurn);
+  const letterCount = useSelector((state: RootState) => state.game.letterCount);
   const curRow = useSelector((state: RootState) => state.game.curRow);
   const guessList = useSelector((state: RootState) => state.game.guessList);
   const keyMap = useSelector((state: RootState) => state.game.keyMap);
@@ -69,7 +69,7 @@ const GameKeyboard = (props: Props) => {
       <div className="game-keyboard-row">
         <button
           className="tile"
-          disabled={curGuess.length < LETTER_COUNT}
+          disabled={curGuess.length < letterCount}
           onClick={props.onClickEner}
         >
           ENTER

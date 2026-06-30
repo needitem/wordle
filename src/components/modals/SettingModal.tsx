@@ -3,8 +3,15 @@ import React from "react";
 import { Form, Modal } from "react-bootstrap";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "store";
-import { setContrastmode, setDarkmode, setHardmode } from "store/common";
+import {
+  setContrastmode,
+  setDarkmode,
+  setHardmode,
+  setLetterCount
+} from "store/common";
 import { setShowSettingModal } from "store/modal";
+import { setLetterCountLS } from "utils/const";
+import { getAvailableLengths } from "utils/words";
 import "./SettingModal.scss";
 
 const SettingModal = () => {
@@ -18,9 +25,20 @@ const SettingModal = () => {
   const isContrastMode = useSelector(
     (state: RootState) => state.common.isContrastMode
   );
+  const letterCount = useSelector(
+    (state: RootState) => state.common.letterCount
+  );
+
+  const availableLengths = getAvailableLengths();
 
   const onClose = () => {
     dispatch(setShowSettingModal(false));
+  };
+
+  const onChangeLetterCount = (e: React.ChangeEvent) => {
+    const v = parseInt((e.target as HTMLSelectElement).value, 10);
+    setLetterCountLS(v);
+    dispatch(setLetterCount(v));
   };
 
   const onChangeHardmode = (e: React.ChangeEvent) => {
@@ -68,6 +86,31 @@ const SettingModal = () => {
       </Modal.Header>
       <Modal.Body>
         <section className="pt-0">
+          <div>
+            <div>
+              <b>글자 수</b>
+            </div>
+            <p>
+              <small>
+                한 단어의 자모(글자) 개수입니다. 바꾸면 새 게임이 시작됩니다.
+              </small>
+            </p>
+          </div>
+          <Form>
+            <Form.Select
+              className="letter-count-select"
+              value={letterCount}
+              onChange={onChangeLetterCount}
+            >
+              {availableLengths.map(len => (
+                <option key={len} value={len}>
+                  {len}
+                </option>
+              ))}
+            </Form.Select>
+          </Form>
+        </section>
+        <section>
           <div>
             <div>
               <b>하드 모드</b>
