@@ -10,8 +10,13 @@ interface Props {
 }
 
 const GameKeyboardInput = (props: Props) => {
-  const showAddSolutionModal = useSelector(
-    (state: RootState) => state.modal.showAddSolutionModal
+  // 모달이 열려있으면 포커스를 가로채지 않는다. (드롭다운/입력 동작 방해 방지)
+  const isAnyModalOpen = useSelector(
+    (state: RootState) =>
+      state.modal.showAddSolutionModal ||
+      state.modal.showSettingModal ||
+      state.modal.showHelpModal ||
+      state.modal.showStatisticsModal
   );
 
   const divRef = useRef<HTMLDivElement>(null);
@@ -26,7 +31,7 @@ const GameKeyboardInput = (props: Props) => {
 
   useInterval(() => {
     if (divRef.current) {
-      if (!showAddSolutionModal) {
+      if (!isAnyModalOpen) {
         divRef.current.focus();
       }
     }
